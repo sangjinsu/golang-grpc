@@ -1,6 +1,6 @@
 # gRPC Golang Master Class
 
-section01 ~ 03
+section04
 
 ## Code Generation
 
