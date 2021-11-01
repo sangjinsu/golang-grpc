@@ -20,6 +20,14 @@ message  PrimeNumberDecompositionResponse {
   int64  prime_factor = 1;
 }
 
+message AverageRequest {
+  int64 number = 1;
+}
+
+message AverageResponse {
+  double result = 1;
+}
+
 service CalculatorService {
   rpc Sum(Request) returns (Response) {};
   rpc Minus(Request) returns (Response) {};
@@ -28,4 +36,7 @@ service CalculatorService {
 
   rpc PrimeNumberDecomposition(PrimeNumberDecompositionRequest)
       returns (stream PrimeNumberDecompositionResponse) {};
+
+
+  rpc Average(stream AverageRequest) returns (AverageResponse) {};
 }

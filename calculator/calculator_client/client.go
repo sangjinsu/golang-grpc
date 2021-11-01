@@ -28,14 +28,42 @@ func main() {
 	}(cc)
 
 	c := calculatorpb.NewCalculatorServiceClient(cc)
+	//
+	//for i := 1; i < 10; i++ {
+	//	wg.Add(1)
+	//	go doUnary(c, float64(i), float64(i+1))
+	//}
+	//wg.Wait()
+	//
+	//doServerStreaming(c)
 
-	for i := 1; i < 10; i++ {
-		wg.Add(1)
-		go doUnary(c, float64(i), float64(i+1))
+	doClientStreaming(c)
+}
+
+func doClientStreaming(c calculatorpb.CalculatorServiceClient) {
+	fmt.Println("Starting to do a Average Server Client Streaming RPC...")
+
+	stream, err := c.Average(context.Background())
+	if err != nil {
+		log.Fatalf("error while calling Average RPC: %v", err)
 	}
-	wg.Wait()
 
-	doServerStreaming(c)
+	requests := []*calculatorpb.AverageRequest{
+		{Number: 5},
+		{Number: 6},
+		{Number: 7},
+		{Number: 8},
+	}
+	for _, request := range requests {
+		stream.Send(request)
+	}
+
+	res, err := stream.CloseAndRecv()
+	if err != nil {
+		log.Fatalf("Error while receiving response: %v", err)
+	}
+
+	fmt.Printf("The Average is %v", res.GetResult())
 }
 
 func doServerStreaming(c calculatorpb.CalculatorServiceClient) {
