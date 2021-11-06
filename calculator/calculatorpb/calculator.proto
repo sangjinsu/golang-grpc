@@ -36,6 +36,14 @@ message MaximumResponse {
   int64 result = 1;
 }
 
+message SquareRootRequest {
+  int64 number = 1;
+}
+
+message SquareRootResponse {
+  double result = 1;
+}
+
 service CalculatorService {
   rpc Sum(Request) returns (Response) {};
   rpc Minus(Request) returns (Response) {};
@@ -49,4 +57,9 @@ service CalculatorService {
   rpc Average(stream AverageRequest) returns (AverageResponse) {};
 
   rpc Maximum(stream MaximumRequest) returns (stream MaximumResponse) {};
+
+  // error handling
+  // this RPC will throw an exception if the sent number is negative
+  // The error being sent is of type INVALID_ARGUMENT
+  rpc SquareRoot(SquareRootRequest) returns (SquareRootResponse) {};
 }
