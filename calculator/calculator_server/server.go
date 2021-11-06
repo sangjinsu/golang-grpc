@@ -7,6 +7,7 @@ import (
 	"google.golang.org/grpc"
 	"io"
 	"log"
+	"math"
 	"net"
 )
 
@@ -101,6 +102,34 @@ func (*server) Average(stream calculatorpb.CalculatorService_AverageServer) erro
 		number := req.GetNumber()
 		sum += number
 		cnt++
+	}
+}
+
+func (*server) Maximum(stream calculatorpb.CalculatorService_MaximumServer) error {
+	log.Printf("Received Maximum RPC\n")
+
+	maxNum := int64(math.MinInt64)
+	for {
+		request, err := stream.Recv()
+		if err == io.EOF {
+			return nil
+		}
+		if err != nil {
+			log.Fatalf("Error while reading clinet stream: %v", err)
+			return err
+		}
+
+		number := request.GetNumber()
+		if maxNum < number {
+			maxNum = number
+			sendErr := stream.Send(&calculatorpb.MaximumResponse{
+				Result: maxNum,
+			})
+			if sendErr != nil {
+				log.Fatalf("Error while sending data to client: %v", err)
+				return err
+			}
+		}
 	}
 }
 
