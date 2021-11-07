@@ -107,3 +107,73 @@ func doErrorCall(c calculatorpb.CalculatorServiceClient, n int64) {
 	log.Printf("Response from Greet: %v", res.Result)
 ```
 
+
+
+## SSL Encryption in gRPC
+
+- In production gRPC calls should be running with encryption enabled
+- This is done by generating SSL certificates
+- SSL allows communication to be secure end-to-end and ensuring no Man in the middle attack can be performed 
+
+
+
+### The need for SSL Encryption
+
+- SSL allows clients and servers to encrypt packet 
+
+- SSL enables clients and servers to securely exchange data
+
+- Routers cannot view the content of the internet packets
+
+  
+
+### What is SSL?
+
+- TLS (Transport Layer Security) encrypts the connection between 2 endpoints for secure data exchange 
+- https is based on SSL certificates
+- Two ways of using SSL 
+  - 1 way verification browser => WebServer
+  - 2 way verification SSL authentication 
+
+### Server
+
+```go
+	tls := true
+	var opts []grpc.ServerOption
+	if tls {
+		certFile := "ssl/server.crt"
+		keyFile := "ssl/server.pem"
+		cred, sslErr := credentials.NewServerTLSFromFile(certFile, keyFile)
+		if sslErr != nil {
+			log.Fatalf("Failed loading certificates: %v\n", sslErr)
+			return
+		}
+		opts = append(opts, grpc.Creds(cred))
+	}
+
+	s := grpc.NewServer(opts...)
+```
+
+
+
+### Client
+
+```go
+	tls := true
+	opts := grpc.WithInsecure()
+	if tls {
+		certFile := "ssl/ca.crt" // Certificate Authority Trust certificate
+		creds, sslErr := credentials.NewClientTLSFromFile(certFile, "")
+		if sslErr != nil {
+			log.Fatalf("Error while loading CA trust certificate: %v", sslErr)
+			return
+		}
+		opts = grpc.WithTransportCredentials(creds)
+	}
+
+	cc, err := grpc.Dial("localhost:50051", opts)
+	if err != nil {
+		log.Fatalf("Could not connect: %v", err)
+	}
+```
+
