@@ -2,7 +2,7 @@
 
 section 09 gRPC Advanced Features Deep Dive
 
-### Errors in gRPC
+## Errors in gRPC
 
 #### Error Codes
 
@@ -62,4 +62,48 @@ func doErrorCall(c calculatorpb.CalculatorServiceClient, n int64) {
 ```
 
 
+
+## gRPC Deadlines
+
+- Deadlines allow gRPC clients to specify how long they are willing to wait for an RPC to complete before the RPC is terminated with the error DEADLINE_EXCEEDED
+- The gRPC documentation recommends set a deadline for all client RPC calls 
+
+- The server should check if the deadline has exceeded and cancel the work it is doing
+
+- [gRPC Deadline](https://grpc.io/blog/deadlines/)
+
+### Server
+
+```go
+	for i := 0; i < 3; i++ {
+		if ctx.Err() == context.Canceled {
+			log.Println("The client canceled the request")
+			return nil, status.Error(codes.Canceled, "the client canceled the request")
+		}
+		time.Sleep(1 * time.Second)
+	}
+```
+
+### Client
+
+```go
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	res, err := c.GreetWithDeadline(ctx, req)
+	if err != nil {
+		statusErr, ok := status.FromError(err)
+		if ok {
+			if statusErr.Code() == codes.DeadlineExceeded {
+				log.Fatalln("Timeout was hit. Deadline was exceeded")
+			} else {
+				log.Fatalf("unexpected error: %v\n", statusErr)
+			}
+		} else {
+			log.Fatalf("error while calling Greet RPC: %v", err)
+		}
+		return
+	}
+	log.Printf("Response from Greet: %v", res.Result)
+```
 
