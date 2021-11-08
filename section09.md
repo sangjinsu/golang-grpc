@@ -177,3 +177,26 @@ func doErrorCall(c calculatorpb.CalculatorServiceClient, n int64) {
 	}
 ```
 
+
+
+## Language Interoperability
+
+### gRPC can be used by any language
+
+- Because the code can be generated for any language, it makes it super simple to create micro-services in any language that interact with each other 
+
+
+
+## gRPC Reflection & Evans CLI
+
+- for Clients to connect to Server, they need to have a .proto file which defines the service
+- This is fine for production (you definitely want to know the API definition in advance)
+- For development, when you have a gRPC server you don't know, sometimes you wish you could ask the server
+
+### reflection
+
+- Having servers expose which endpoints are available
+- Allowing command line Interface to talk to server without have a preliminary .proto file
+
+- [evans](https://github.com/ktr0731/evans) : help reflection cli 
+
