@@ -1,6 +1,7 @@
 
 # Created by https://www.toptal.com/developers/gitignore/api/go,jetbrains+all,visualstudiocode,windows,macos,ssh
 # Edit at https://www.toptal.com/developers/gitignore?templates=go,jetbrains+all,visualstudiocode,windows,macos,ssh
+.env
 
 ### Go ###
 # Binaries for programs and plugins
