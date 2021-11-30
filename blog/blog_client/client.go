@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/grpc-project/blog/blogpb"
 	"google.golang.org/grpc"
+	"io"
 	"log"
 )
 
@@ -52,5 +53,57 @@ func main() {
 	}
 
 	fmt.Printf("Blog was read %v\n", readBlogRes)
+
+	newBlog := &blogpb.Blog{
+		Id:       blogId,
+		AuthorId: "changed Author",
+		Title:    "edited blog",
+		Content:  "Content of the first blog edited",
+	}
+
+	updateBlogReq := &blogpb.UpdateBlogRequest{
+		Blog: newBlog,
+	}
+
+	updateBlog, updateErr := c.UpdateBlog(context.Background(), updateBlogReq)
+	if updateErr != nil {
+		fmt.Printf("Error happend while updating: %v\n", updateErr)
+	}
+
+	fmt.Printf("Blog was updated: %v\n", updateBlog)
+
+	deleteBlogReq := &blogpb.DeleteBlogRequest{
+		BlogId: blogId,
+	}
+
+	deleteBlog, deleteErr := c.DeleteBlog(context.Background(), deleteBlogReq)
+	if deleteErr != nil {
+		fmt.Printf("Error happend while deleting: %v\n", deleteErr)
+	}
+
+	fmt.Printf("Blog was deleted: %v\n", deleteBlog)
+
+	stream, listErr := c.ListBlog(context.Background(), &blogpb.ListBlogRequest{})
+
+	if listErr != nil {
+		log.Fatalf("error while listing blog: %v", listErr)
+	}
+
+	if err != nil {
+		return
+	}
+	if err != nil {
+		return
+	}
+	for {
+		listBlogResponse, recvErr := stream.Recv()
+		if recvErr == io.EOF {
+			break
+		}
+		if recvErr != nil {
+			log.Fatalf("Something happend: %v", recvErr)
+		}
+		fmt.Println(listBlogResponse.GetBlog())
+	}
 
 }
