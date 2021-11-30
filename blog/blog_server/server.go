@@ -164,6 +164,47 @@ func (*server) DeleteBlog(ctx context.Context, req *blogpb.DeleteBlogRequest) (*
 	}, nil
 }
 
+func (*server) ListBlog(req *blogpb.ListBlogRequest, stream blogpb.BlogService_ListBlogServer) error {
+	fmt.Println("List blog request")
+	cursor, err := collection.Find(context.Background(), bson.D{})
+	if err != nil {
+		return status.Errorf(
+			codes.Internal,
+			fmt.Sprintf("Unknown internal error: %v", err),
+		)
+	}
+
+	defer func(cursor *mongo.Cursor, ctx context.Context) {
+		closeErr := cursor.Close(ctx)
+		if closeErr != nil {
+			fmt.Printf("Cursor close error: %v\n", closeErr)
+		}
+	}(cursor, context.Background())
+
+	for cursor.Next(context.Background()) {
+		data := &blogItem{}
+		decodeErr := cursor.Decode(data)
+		if decodeErr != nil {
+			return status.Errorf(
+				codes.Internal,
+				fmt.Sprintf("Error while decoding data from MongoDB: %v", decodeErr),
+			)
+		}
+		stream.Send(&blogpb.ListBlogResponse{
+			Blog: dataToBlogPb(data),
+		})
+	}
+
+	if cursorErr := cursor.Err(); cursorErr != nil {
+		return status.Errorf(
+			codes.Internal,
+			fmt.Sprintf("Unknown internal error: %v", err),
+		)
+	}
+
+	return nil
+}
+
 func main() {
 	// if we crash the go code, we get the file name and line number
 	// 버그나 에러 발생시 파일 이름과 줄 번호를 알 수 있다
