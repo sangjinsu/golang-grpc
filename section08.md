@@ -63,50 +63,6 @@ func doBiDiStreaming(c calculatorpb.CalculatorServiceClient) {
 		4, 5, 8, 1, 2, 6, -7, 89, 5, 2, 100, -7, 5,
 	}
 
-	waitc := make(chan string)
-	go func() {
-		for _, num := range nums {
-			request := &calculatorpb.MaximumRequest{Number: num}
-			log.Printf("Sending message: %v\n", request)
-			sendErr := stream.Send(request)
-			if sendErr != nil {
-				log.Fatalf("Error while sending: %v", sendErr)
-				break
-			}
-		}
-		closeSendErr := stream.CloseSend()
-		if closeSendErr != nil {
-			log.Fatalf("Error while closing sending: %v", closeSendErr)
-		}
-	}()
-
-	go func() {
-		for {
-			response, responseErr := stream.Recv()
-			if responseErr == io.EOF {
-				break
-			}
-			if responseErr != nil {
-				log.Fatalf("Error while receiving: %v", err)
-				break
-			}
-			log.Printf("Maxnum is %v\n", response.Result)
-		}
-		close(waitc)
-	}()
-	<-waitc
-}func doBiDiStreaming(c calculatorpb.CalculatorServiceClient) {
-	fmt.Println("Starting to do a Maximum Server Client Streaming RPC...")
-
-	stream, err := c.Maximum(context.Background())
-	if err != nil {
-		log.Fatalf("error while calling Maximum RPC: %v", err)
-	}
-
-	nums := []int64{
-		4, 5, 8, 1, 2, 6, -7, 89, 5, 2, 100, -7, 5,
-	}
-
 	waitc := make(chan int64)
 	go func() {
 		for _, num := range nums {
